@@ -40,8 +40,16 @@ namespace JWTAuthentication.WebApi.Controllers
         public async Task<ActionResult> GetTokenAsync([FromBody]TokenRequestModel model)
         {
             var result = await _userService.GetTokenAsync(model);
-            SetRefreshTokenInCookie(result.RefreshToken);
-            return Ok(result);
+            if (result.RefreshToken is null)
+            {
+                return NotFound(result.Message);
+            }
+            else
+            {
+                SetRefreshTokenInCookie(result.RefreshToken);
+                return Ok(result);
+            }
+            
         }
         /// <summary>
         /// adds roles to user with current roles
