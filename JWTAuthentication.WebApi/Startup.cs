@@ -50,9 +50,9 @@ namespace JWTAuthentication.WebApi
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "Security API",
-                    Version = "v1" ,
+                    Version = "v1",
                     Description = "Security API ",
-                    TermsOfService = new Uri("TBA"),
+                    TermsOfService = new Uri("https://choosealicense.com/licenses/mit/"),
                     Contact = new OpenApiContact
                     {
                         Name = "Ramish",
@@ -62,7 +62,7 @@ namespace JWTAuthentication.WebApi
                     License = new OpenApiLicense
                     {
                         Name = "Use under MIT license",
-                       // Url = new Uri("TBA"),
+                         Url = new Uri("https://choosealicense.com/licenses/mit/"),
                     }
                 });
             });
