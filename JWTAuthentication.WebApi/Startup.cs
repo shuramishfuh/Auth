@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 namespace JWTAuthentication.WebApi
 {
@@ -43,7 +44,28 @@ namespace JWTAuthentication.WebApi
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddScoped<IUserService, UserService>();
 
-
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Security API",
+                    Version = "v1" ,
+                    Description = "Security API ",
+                    TermsOfService = new Uri("TBA"),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Ramish",
+                        Email = "agamatimtim@gmail.com",
+                        Url = new Uri("https://twitter.com/ramish_x"),
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "Use under MIT license",
+                       // Url = new Uri("TBA"),
+                    }
+                });
+            });
 
 
             //Adding DB Context with MSSQL
@@ -84,11 +106,25 @@ namespace JWTAuthentication.WebApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // ensures the database is always created and all migrations are applied
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.Migrate();
+            }
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Security API V1");
+            });
+
+           
             app.UseHttpsRedirection();
 
             app.UseRouting();
