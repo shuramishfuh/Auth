@@ -21,14 +21,12 @@ namespace JWTAuthentication.WebApi.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly JWT _jwt;
 
-        public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IOptions<JWT> jwt, ApplicationDbContext context)
+        public UserService(UserManager<ApplicationUser> userManager,  IOptions<JWT> jwt, ApplicationDbContext context)
         {
             _context = context;
             _userManager = userManager;
-            _roleManager = roleManager;
             _jwt = jwt.Value;
         }
         public async Task<string> RegisterAsync(RegisterModel model)
@@ -48,14 +46,13 @@ namespace JWTAuthentication.WebApi.Services
                 {
                     await _userManager.AddToRoleAsync(user, Authorization.default_role.ToString());
                     await _context.SaveChangesAsync();
+                    return $"User Registered with username {user.UserName}";
 
                 }
-                return $"User Registered with username {user.UserName}";
+                return $"Error occured check your credentials {user}";
+
             }
-            else
-            {
-                return $"Email {user.Email } is already registered.";
-            }
+            return $"Email {user.Email } is already registered.";
         }
         public async Task<AuthenticationModel> GetTokenAsync(TokenRequestModel model)
         {
@@ -80,9 +77,12 @@ namespace JWTAuthentication.WebApi.Services
 
                 if (user.RefreshTokens.Any(a => a.IsActive))
                 {
-                    var activeRefreshToken = user.RefreshTokens.FirstOrDefault(a => a.IsActive == true);
-                    authenticationModel.RefreshToken = activeRefreshToken.Token;
-                    authenticationModel.RefreshTokenExpiration = activeRefreshToken.Expires;
+                    var activeRefreshToken = user.RefreshTokens.FirstOrDefault(a => a.IsActive);
+                    if (activeRefreshToken != null)
+                    {
+                        authenticationModel.RefreshToken = activeRefreshToken.Token;
+                        authenticationModel.RefreshTokenExpiration = activeRefreshToken.Expires;
+                    }
                 }
                 else
                 {

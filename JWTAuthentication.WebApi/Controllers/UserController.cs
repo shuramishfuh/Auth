@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using JWTAuthentication.WebApi.Models;
 using JWTAuthentication.WebApi.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -83,7 +82,15 @@ namespace JWTAuthentication.WebApi.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("revoke-token")]
+        // method indicates a warning because of
+        // lack of await in the body 
+        // if turned async removed cannot convert 
+        // action result to task 
+        // so suppresses the warning 
+        // no effect to code however
+#pragma warning disable 1998 
         public async Task<ActionResult> RevokeToken([FromBody] RevokeTokenRequest model)
+#pragma warning restore 1998
         {
             // accept token from request body or cookie
             var token = model.Token ?? Request.Cookies["refreshToken"];
@@ -108,8 +115,7 @@ namespace JWTAuthentication.WebApi.Controllers
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
 
-        [Authorize]
-        [HttpPost("tokens/{id}")]
+        [Microsoft.AspNetCore.Authorization.Authorize, HttpPost("tokens/{id}")]
         public ActionResult GetRefreshTokens(string id)
         {
             var user = _userService.GetById(id);
