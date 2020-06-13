@@ -9,6 +9,7 @@ namespace JWTAuthentication.WebApi.Services
         Task<string> DeleteUserAsync(RegisterModel model);
         Task<AuthenticationModel> GetTokenAsync(TokenRequestModel model);
         Task<string> AddRoleAsync(AddRoleModel model);
+        Task<string> RemoveRoleAsync(AddRoleModel model);
 
         Task<AuthenticationModel> RefreshTokenAsync(string jwtToken);
 

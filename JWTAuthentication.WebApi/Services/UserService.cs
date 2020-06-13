@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -57,10 +56,6 @@ namespace JWTAuthentication.WebApi.Services
 
         public async Task<string> DeleteUserAsync(RegisterModel model)
         {
-            var user = new ApplicationUser
-            {
-                Email = model.Email
-            };
             var userWithSameEmail = await _userManager.FindByEmailAsync(model.Email);
             if (userWithSameEmail != null)
             {
@@ -150,12 +145,7 @@ namespace JWTAuthentication.WebApi.Services
             var userClaims = await _userManager.GetClaimsAsync(user);
             var roles = await _userManager.GetRolesAsync(user);
 
-            var roleClaims = new List<Claim>();
-
-            for (int i = 0; i < roles.Count; i++)
-            {
-                roleClaims.Add(new Claim("roles", roles[i]));
-            }
+            var roleClaims = roles.Select(t => new Claim("roles", t)).ToList();
 
             var claims = new[]
             {
@@ -198,7 +188,31 @@ namespace JWTAuthentication.WebApi.Services
                     var validRole = Enum.GetValues(typeof(Authorization.Roles)).Cast<Authorization.Roles>().FirstOrDefault(x => x.ToString().ToLower() == model.Role.ToLower());
                     await _userManager.AddToRoleAsync(user, validRole.ToString());
                     await _context.SaveChangesAsync();
-                    return $"Added {model.Role} to user {model.Email}.";
+                    return $"Success {model.Role} to user {model.Email}.";
+                }
+                return $"Role {model.Role} not found.";
+            }
+            return $"Incorrect Credentials for user {user.Email}.";
+
+        }
+
+
+        public async Task<string> RemoveRoleAsync(AddRoleModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return $"No Accounts Registered with {model.Email}.";
+            }
+            if (await _userManager.CheckPasswordAsync(user, model.Password))
+            {
+                var roleExists = Enum.GetNames(typeof(Authorization.Roles)).Any(x => x.ToLower() == model.Role.ToLower());
+                if (roleExists)
+                {
+                    var validRole = Enum.GetValues(typeof(Authorization.Roles)).Cast<Authorization.Roles>().FirstOrDefault(x => x.ToString().ToLower() == model.Role.ToLower());
+                    await _userManager.RemoveFromRoleAsync(user, validRole.ToString());
+                    await _context.SaveChangesAsync();
+                    return $"Success {model.Role} role was removed from user {model.Email}.";
                 }
                 return $"Role {model.Role} not found.";
             }
@@ -284,6 +298,7 @@ namespace JWTAuthentication.WebApi.Services
         }
 
         //TODO : Update User Details
-        //TODO : Remove User from Role 
+        //TODO : Confirm  User Email 
+        
     }
 }

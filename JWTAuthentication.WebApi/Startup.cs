@@ -40,6 +40,7 @@ namespace JWTAuthentication.WebApi
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireLowercase = false;
+                    options.SignIn.RequireConfirmedEmail = true;  // require confirm 
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddScoped<IUserService, UserService>();

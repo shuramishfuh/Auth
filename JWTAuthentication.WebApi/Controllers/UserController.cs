@@ -23,7 +23,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         
-        [HttpPost("register")]
+        [HttpPost("Register")]
         public async Task<ActionResult> RegisterAsync([FromBody]RegisterModel model)
         {
 
@@ -57,7 +57,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// </summary>
         /// <param name="model"> email password</param>
         /// <returns></returns>
-        [HttpPost("token")]
+        [HttpPost("Token")]
         public async Task<ActionResult> GetTokenAsync([FromBody]TokenRequestModel model)
         {
             var result = await _userService.GetTokenAsync(model);
@@ -77,18 +77,40 @@ namespace JWTAuthentication.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost("addrole")]
+        [HttpPost("AddRole")]
         public async Task<ActionResult> AddRoleAsync(AddRoleModel model)
         {
             var result = await _userService.AddRoleAsync(model);
-            return Ok(result);
+            if (result.StartsWith("Success"))
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }   
+        
+        /// <summary>
+        /// removes roles to user with current roles
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("DeleteRole")]
+        public async Task<ActionResult> RemoveRoleAsync(AddRoleModel model)
+        {
+            var result = await _userService.RemoveRoleAsync(model);
+            if (result.StartsWith("Success"))
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
         }
 
         /// <summary>
         /// refresh existing token 
         /// </summary>
         /// <returns></returns>
-        [HttpPost("refresh-token")]
+        [HttpPost("RefreshToken")]
         public async Task<ActionResult> RefreshToken()
         {
             var refreshToken = Request.Cookies["refreshToken"];
@@ -103,7 +125,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost("revoke-token")]
+        [HttpPost("RevokeToken")]
         // method indicates a warning because of
         // lack of await in the body 
         // if turned async removed cannot convert 
@@ -137,7 +159,7 @@ namespace JWTAuthentication.WebApi.Controllers
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
 
-        [Authorize, HttpPost("tokens/{id}")]
+        [Authorize, HttpPost("Tokens/{id}")]
         public ActionResult GetRefreshTokens(string id)
         {
             var user = _userService.GetById(id);

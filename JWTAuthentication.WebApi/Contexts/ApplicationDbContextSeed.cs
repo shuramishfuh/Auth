@@ -21,7 +21,7 @@ namespace JWTAuthentication.WebApi.Contexts
             if (userManager.Users.All(u => u.Id != defaultUser.Id))
             {
                 await userManager.CreateAsync(defaultUser, Authorization.DefaultPassword);
-                await userManager.AddToRoleAsync(defaultUser, Authorization.DefaultRole.ToString());
+                await userManager.AddToRoleAsync(defaultUser, Authorization.Roles.Root.ToString());
             }
         }
     }
