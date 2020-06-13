@@ -44,9 +44,9 @@ namespace JWTAuthentication.WebApi.Services
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(user, Authorization.default_role.ToString());
+                    await _userManager.AddToRoleAsync(user, Authorization.DefaultRole.ToString());
                     await _context.SaveChangesAsync();
-                    return $"User Registered with username {user.UserName}";
+                    return $"Success User Registered with username {user.UserName}";
 
                 }
                 return $"Error occured check your credentials {user}";
@@ -54,6 +54,30 @@ namespace JWTAuthentication.WebApi.Services
             }
             return $"Email {user.Email } is already registered.";
         }
+
+        public async Task<string> DeleteUserAsync(RegisterModel model)
+        {
+            var user = new ApplicationUser
+            {
+                Email = model.Email
+            };
+            var userWithSameEmail = await _userManager.FindByEmailAsync(model.Email);
+            if (userWithSameEmail != null)
+            {
+                var result = await _userManager.DeleteAsync(userWithSameEmail);
+                if (result.Succeeded)
+                {
+                   // await _userManager.AddToRoleAsync(user, Authorization.DefaultRole.ToString());
+                    await _context.SaveChangesAsync();
+                    return $"Success user was deleted";
+
+                }
+                return $"Error occured could not delete user with email{model.Email} ";
+
+            }
+            return $" No User with Email {model.Email } was found.";
+        }
+
         public async Task<AuthenticationModel> GetTokenAsync(TokenRequestModel model)
         {
             var authenticationModel = new AuthenticationModel();

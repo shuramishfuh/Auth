@@ -5,14 +5,14 @@
         public enum Roles
         {
             Administrator,
-            Moderator,
+            Root,
             User
         }
         
 
-        public const string default_username = "user";
-        public const string default_email = "user@secureapi.com";
-        public const string default_password = "Pa$$w0rd.";
-        public const Roles default_role = Roles.User;
+        public const string DefaultUsername = "Root";
+        public const string DefaultEmail = "root@System.com";
+        public const string DefaultPassword = "SystemRoot2@System.com34532.";
+        public const Roles DefaultRole = Roles.Root;
     }
 }

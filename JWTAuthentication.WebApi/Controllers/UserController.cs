@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using JWTAuthentication.WebApi.Models;
 using JWTAuthentication.WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,9 +28,30 @@ namespace JWTAuthentication.WebApi.Controllers
         {
 
             var result = await _userService.RegisterAsync(model);
-            return Ok(result);
-        }
+            if (result.StartsWith("Success"))
+            {
+                return Ok(result);
+            }
 
+            return BadRequest(result);
+        }
+        /// <summary>
+        /// delete users 
+        /// </summary>
+        /// <param name="model">requires user's email address</param>
+        /// <returns></returns>
+        [Authorize(Roles ="Root")]
+        [HttpPost("delete")]
+        public async Task<ActionResult> DeleteUserAsync([FromBody] RegisterModel model)
+        {
+            var result = await _userService.DeleteUserAsync(model);
+            if (result.StartsWith("Success"))
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        }
         /// <summary>
         /// gets token or generates new 
         /// </summary>
@@ -115,7 +137,7 @@ namespace JWTAuthentication.WebApi.Controllers
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
 
-        [Microsoft.AspNetCore.Authorization.Authorize, HttpPost("tokens/{id}")]
+        [Authorize, HttpPost("tokens/{id}")]
         public ActionResult GetRefreshTokens(string id)
         {
             var user = _userService.GetById(id);
