@@ -40,9 +40,10 @@ namespace JWTAuthentication.WebApi
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequireUppercase = false;
                     options.Password.RequireLowercase = false;
-                    options.SignIn.RequireConfirmedEmail = true;  // require confirm 
+                    options.SignIn.RequireConfirmedEmail = true; // require confirm 
                 })
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
             services.AddScoped<IUserService, UserService>();
 
             // Register the Swagger generator, defining 1 or more Swagger documents
@@ -125,7 +126,7 @@ namespace JWTAuthentication.WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Security API V1");
             });
 
-           
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
 
             app.UseRouting();

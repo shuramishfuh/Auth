@@ -5,6 +5,8 @@ using JWTAuthentication.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.VisualBasic;
 
 namespace JWTAuthentication.WebApi.Controllers
 {
@@ -13,21 +15,43 @@ namespace JWTAuthentication.WebApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IConfiguration _configuration;
+
+        public UserController(IUserService userService,IConfiguration configuration)
         {
             _userService = userService;
+            _configuration = configuration;
         }
+
         /// <summary>
         /// register new user
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        
         [HttpPost("Register")]
         public async Task<ActionResult> RegisterAsync([FromBody]RegisterModel model)
         {
 
             var result = await _userService.RegisterAsync(model);
+            if (result.StartsWith("Success"))
+            {
+                return Ok(result);
+            }
+
+            return BadRequest(result);
+        } 
+        
+        
+        /// <summary>
+        /// Updates existing user
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost("Update")]
+        public async Task<ActionResult> UpdateUserAsync([FromBody]RegisterModel model)
+        {
+
+            var result = await _userService.UpdateUserAsync(model);
             if (result.StartsWith("Success"))
             {
                 return Ok(result);
@@ -166,6 +190,23 @@ namespace JWTAuthentication.WebApi.Controllers
             return Ok(user.RefreshTokens);
         }
 
-       
+
+        // /api/auth/confirm-email?userid&token
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+                return NotFound();
+
+            var result = await _userService.ConfirmEmailAsync(userId, token);
+            if (result.StartsWith("Success"))
+            {
+                return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
+            }
+
+            return BadRequest(result);
+
+           
+        }
     }
 }
