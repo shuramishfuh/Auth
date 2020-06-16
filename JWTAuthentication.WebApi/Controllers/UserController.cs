@@ -43,6 +43,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("Update")]
         public async Task<ActionResult> UpdateUserAsync([FromBody]RegisterModel model)
         {
@@ -85,18 +86,17 @@ namespace JWTAuthentication.WebApi.Controllers
             {
                 return NotFound(result.Message);
             }
-            else
-            {
-                SetRefreshTokenInCookie(result.RefreshToken);
-                return Ok(result);
-            }
-            
+
+            SetRefreshTokenInCookie(result.RefreshToken);
+            return Ok(result);
+
         }
         /// <summary>
         /// adds roles to user with current roles
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Root,Administrator")]
         [HttpPost("AddRole")]
         public async Task<ActionResult> AddRoleAsync(AddRoleModel model)
         {
@@ -115,6 +115,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("DeleteRole")]
+        [Authorize(Roles = "Root,Administrator")]
         public async Task<ActionResult> RemoveRoleAsync(AddRoleModel model)
         {
             var result = await _userService.RemoveRoleAsync(model);
@@ -218,7 +219,7 @@ namespace JWTAuthentication.WebApi.Controllers
 
         // api/user/reset-password
         [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromForm]PasswordResetViewModel model)
+        public async Task<ActionResult> ResetPassword([FromForm]PasswordResetViewModel model)
         {
             if (!ModelState.IsValid) return BadRequest("Check your Inputs");
             var result = await _userService.ResetPasswordAsync(model);
@@ -228,7 +229,9 @@ namespace JWTAuthentication.WebApi.Controllers
 
             return BadRequest("error occured Please try again later");
 
-        }
+        }  
+        
+      
 
     }
 }

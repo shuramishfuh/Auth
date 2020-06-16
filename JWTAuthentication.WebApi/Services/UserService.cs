@@ -26,7 +26,7 @@ namespace JWTAuthentication.WebApi.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JWT _jwt;
 
-        public UserService(UserManager<ApplicationUser> userManager,  IOptions<JWT> jwt, ApplicationDbContext context,IConfiguration configuration)
+        public UserService(UserManager<ApplicationUser> userManager, IOptions<JWT> jwt, ApplicationDbContext context,IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -44,29 +44,21 @@ namespace JWTAuthentication.WebApi.Services
                 LastName = model.LastName
             };
             var userWithSameEmail = await _userManager.FindByEmailAsync(model.Email);
-            if (userWithSameEmail == null)
-            {
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    await _userManager.AddToRoleAsync(user, Authorization.DefaultRole.ToString());
-                    await _context.SaveChangesAsync();
-                    var getUser = await _userManager.FindByEmailAsync(model.Email);
-                    var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(getUser);
-                    var encodeEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
-                    var validEmailToken = WebEncoders.Base64UrlEncode(encodeEmailToken);
-                    var url = $"{_configuration["AppUrl"]}/api/user/confirmEmail?userid={getUser.Id}&token={validEmailToken}"; // change AppUrl in config after deployment
-                    await SendEmail(getUser.Email, "Confirm your email", $"<h1>Welcome</h1>" + 
-                                                                         $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+            if (userWithSameEmail != null) return $"Email {user.Email} is already registered.";
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded) return $"Error occured check your credentials {user}";
+            await _userManager.AddToRoleAsync(user, Authorization.DefaultRole.ToString());
+            await _context.SaveChangesAsync();
+            var getUser = await _userManager.FindByEmailAsync(model.Email);
+            var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(getUser);
+            var encodeEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
+            var validEmailToken = WebEncoders.Base64UrlEncode(encodeEmailToken);
+            var url = $"{_configuration["AppUrl"]}/api/user/confirmEmail?userid={getUser.Id}&token={validEmailToken}"; // change AppUrl in config after deployment
+            await SendEmail(getUser.Email, "Confirm your email", $"<h1>Welcome</h1>" + 
+                                                                 $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
 
 
-                    return $"Success User Registered with username {user.UserName}";
-
-                }
-                return $"Error occured check your credentials {user}";
-
-            }
-            return $"Email {user.Email } is already registered.";
+            return $"Success User Registered with username {user.UserName}";
         }
 
         /// <summary>
@@ -96,7 +88,7 @@ namespace JWTAuthentication.WebApi.Services
             return $"Success User updated";
 
         }
-
+      
         public async Task<string> DeleteUserAsync(RegisterModel model)
         {
             var userWithSameEmail = await _userManager.FindByEmailAsync(model.Email);
@@ -128,34 +120,37 @@ namespace JWTAuthentication.WebApi.Services
             }
             if (await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                authenticationModel.IsAuthenticated = true;
-                JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
-                authenticationModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-                authenticationModel.Email = user.Email;
-                authenticationModel.UserName = user.UserName;
-                var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
-                authenticationModel.Roles = rolesList.ToList();
-
-
-                if (user.RefreshTokens.Any(a => a.IsActive))
+                if (user.EmailConfirmed)
                 {
-                    var activeRefreshToken = user.RefreshTokens.FirstOrDefault(a => a.IsActive);
-                    if (activeRefreshToken != null)
+                    authenticationModel.IsAuthenticated = true;
+                    var jwtSecurityToken = await CreateJwtToken(user);
+                    authenticationModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+                    authenticationModel.Email = user.Email;
+                    authenticationModel.UserName = user.UserName;
+                    var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
+                    authenticationModel.Roles = rolesList.ToList();
+
+
+                    if (user.RefreshTokens.Any(a => a.IsActive))
                     {
+                        var activeRefreshToken = user.RefreshTokens.FirstOrDefault(a => a.IsActive);
+                        if (activeRefreshToken == null) return authenticationModel;
                         authenticationModel.RefreshToken = activeRefreshToken.Token;
                         authenticationModel.RefreshTokenExpiration = activeRefreshToken.Expires;
                     }
-                }
-                else
-                {
-                    var refreshToken = CreateRefreshToken();
-                    authenticationModel.RefreshToken = refreshToken.Token;
-                    authenticationModel.RefreshTokenExpiration = refreshToken.Expires;
-                    user.RefreshTokens.Add(refreshToken);
-                    _context.Update(user);
-                   await _context.SaveChangesAsync();
-                }
+                    else
+                    {
+                        var refreshToken = CreateRefreshToken();
+                        authenticationModel.RefreshToken = refreshToken.Token;
+                        authenticationModel.RefreshTokenExpiration = refreshToken.Expires;
+                        user.RefreshTokens.Add(refreshToken);
+                        _context.Update(user);
+                        await _context.SaveChangesAsync();
+                    }
 
+                    return authenticationModel;
+                }
+                authenticationModel.Message = $"Email {user.Email} not verified .";
                 return authenticationModel;
             }
             authenticationModel.IsAuthenticated = false;
@@ -222,19 +217,17 @@ namespace JWTAuthentication.WebApi.Services
             {
                 return $"No Accounts Registered with {model.Email}.";
             }
-            if (await _userManager.CheckPasswordAsync(user, model.Password))
+
+            if (!await _userManager.CheckPasswordAsync(user, model.Password))
+                return $"Incorrect Credentials for user {user.Email}.";
+            var roleExists = Enum.GetNames(typeof(Authorization.Roles)).Any(x => x.ToLower() == model.Role.ToLower());
+            if (!roleExists) return $"Role {model.Role} not found.";
             {
-                var roleExists = Enum.GetNames(typeof(Authorization.Roles)).Any(x => x.ToLower() == model.Role.ToLower());
-                if (roleExists)
-                {
-                    var validRole = Enum.GetValues(typeof(Authorization.Roles)).Cast<Authorization.Roles>().FirstOrDefault(x => x.ToString().ToLower() == model.Role.ToLower());
-                    await _userManager.AddToRoleAsync(user, validRole.ToString());
-                    await _context.SaveChangesAsync();
-                    return $"Success {model.Role} to user {model.Email}.";
-                }
-                return $"Role {model.Role} not found.";
+                var validRole = Enum.GetValues(typeof(Authorization.Roles)).Cast<Authorization.Roles>().FirstOrDefault(x => x.ToString().ToLower() == model.Role.ToLower());
+                await _userManager.AddToRoleAsync(user, validRole.ToString());
+                await _context.SaveChangesAsync();
+                return $"Success {model.Role} to user {model.Email}.";
             }
-            return $"Incorrect Credentials for user {user.Email}.";
 
         }
 
@@ -246,19 +239,17 @@ namespace JWTAuthentication.WebApi.Services
             {
                 return $"No Accounts Registered with {model.Email}.";
             }
-            if (await _userManager.CheckPasswordAsync(user, model.Password))
+
+            if (!await _userManager.CheckPasswordAsync(user, model.Password))
+                return $"Incorrect Credentials for user {user.Email}.";
+            var roleExists = Enum.GetNames(typeof(Authorization.Roles)).Any(x => x.ToLower() == model.Role.ToLower());
+            if (!roleExists) return $"Role {model.Role} not found.";
             {
-                var roleExists = Enum.GetNames(typeof(Authorization.Roles)).Any(x => x.ToLower() == model.Role.ToLower());
-                if (roleExists)
-                {
-                    var validRole = Enum.GetValues(typeof(Authorization.Roles)).Cast<Authorization.Roles>().FirstOrDefault(x => x.ToString().ToLower() == model.Role.ToLower());
-                    await _userManager.RemoveFromRoleAsync(user, validRole.ToString());
-                    await _context.SaveChangesAsync();
-                    return $"Success {model.Role} role was removed from user {model.Email}.";
-                }
-                return $"Role {model.Role} not found.";
+                var validRole = Enum.GetValues(typeof(Authorization.Roles)).Cast<Authorization.Roles>().FirstOrDefault(x => x.ToString().ToLower() == model.Role.ToLower());
+                await _userManager.RemoveFromRoleAsync(user, validRole.ToString());
+                await _context.SaveChangesAsync();
+                return $"Success {model.Role} role was removed from user {model.Email}.";
             }
-            return $"Incorrect Credentials for user {user.Email}.";
 
         }
 
@@ -308,6 +299,7 @@ namespace JWTAuthentication.WebApi.Services
             authenticationModel.RefreshTokenExpiration = newRefreshToken.Expires;
             return authenticationModel;
         }
+
 
         /// <summary>
         /// revokes existing token
