@@ -54,10 +54,11 @@ namespace JWTAuthentication.WebApi.Services
                     var getUser = await _userManager.FindByEmailAsync(model.Email);
                     var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(getUser);
                     var encodeEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
-                    var validEmailToken = WebEncoders.Base64UrlEncode(encodeEmailToken); 
-                    var url = $"{_configuration.GetValue<string>("AppUrl")}/api/auth/confirmEmail?userid={getUser.Id}&token={validEmailToken}"; // change AppUrl in config after deployment
+                    var validEmailToken = WebEncoders.Base64UrlEncode(encodeEmailToken);
+                    var url = $"{_configuration["AppUrl"]}/api/user/confirmEmail?userid={getUser.Id}&token={validEmailToken}"; // change AppUrl in config after deployment
                     await SendEmail(getUser.Email, "Confirm your email", $"<h1>Welcome</h1>" + 
                                                                          $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
+
 
                     return $"Success User Registered with username {user.UserName}";
 
@@ -67,6 +68,7 @@ namespace JWTAuthentication.WebApi.Services
             }
             return $"Email {user.Email } is already registered.";
         }
+
         /// <summary>
         /// updates users
         /// </summary>
@@ -80,10 +82,13 @@ namespace JWTAuthentication.WebApi.Services
                 return $"No user with {model.Email }  found.";
             }
             
-            user.UserName = model.Username;
-            user.Email = model.Email;
-            user.FirstName = model.FirstName;
-            user.LastName = model.LastName;
+            if(model.Username != null)
+                user.UserName = model.Username;
+            if (model.FirstName != null)
+                 user.FirstName = model.FirstName; 
+            if (model.LastName != null)
+                 user.LastName = model.LastName;
+           
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) return $"Error occured could not update user {user}";
@@ -110,15 +115,6 @@ namespace JWTAuthentication.WebApi.Services
             }
             return $" No User with Email {model.Email } was found.";
         }
-
-        public async Task<string> UpdateUserEmailAsync(string currentEmail, string newEmail)
-        {
-            throw new NotImplementedException(); 
-            //var user = await _userManager.FindByEmailAsync(currentEmail);
-            //if (user is null) { return $"Error User does not exist {user}";}
-            //var allUsers = _userManager.ChangeEmailAsync()
-        }
-
 
         public async Task<AuthenticationModel> GetTokenAsync(TokenRequestModel model)
         {
@@ -167,21 +163,19 @@ namespace JWTAuthentication.WebApi.Services
             return authenticationModel;
         }
 
-        private RefreshToken CreateRefreshToken()
+        private static RefreshToken CreateRefreshToken()
         {
             var randomNumber = new byte[32];
-            using (var generator = new RNGCryptoServiceProvider())
+            using var generator = new RNGCryptoServiceProvider();
+            generator.GetBytes(randomNumber);
+            return new RefreshToken
             {
-                generator.GetBytes(randomNumber);
-                return new RefreshToken
-                {
-                    Token = Convert.ToBase64String(randomNumber),
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    Created = DateTime.UtcNow
-                };
-
-            }
+                Token = Convert.ToBase64String(randomNumber),
+                Expires = DateTime.UtcNow.AddDays(7),
+                Created = DateTime.UtcNow
+            };
         }
+
         /// <summary>
         /// creates now token for new user 
         /// </summary>
@@ -215,6 +209,7 @@ namespace JWTAuthentication.WebApi.Services
                 signingCredentials: signingCredentials);
             return jwtSecurityToken;
         }
+
         /// <summary>
         /// adds to  a user
         /// </summary>
@@ -339,12 +334,23 @@ namespace JWTAuthentication.WebApi.Services
             return true;
         }
 
+        /// <summary>
+        /// get user by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public ApplicationUser GetById(string id)
         {
             return _context.Users.Find(id);
         }
 
-        // send email
+        /// <summary>
+        /// send email
+        /// </summary>
+        /// <param name="emailTo"></param>
+        /// <param name="subject"></param>
+        /// <param name="body"></param>
+        /// <returns></returns>
         public async Task<string> SendEmail(string emailTo,  string subject, string body)
         {
             var from = _configuration.GetValue<string>("Email:address");
@@ -371,7 +377,12 @@ namespace JWTAuthentication.WebApi.Services
             return "Successful"; 
         }
       
-        // verify email
+        /// <summary>
+        /// verify email
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<string> ConfirmEmailAsync(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId); 
@@ -391,8 +402,44 @@ namespace JWTAuthentication.WebApi.Services
         }
 
 
-        //TODO : Update User Details
-        //TODO : Confirm  User Email 
-        
+        public async Task<string> ForgetPasswordAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return  $"Error User not found";
+            
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = Encoding.UTF8.GetBytes(token);
+            var validToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+            var url = $"{_configuration["AppUrl"]}/ResetPassword?email={email}&token={validToken}";
+
+            await SendEmail(email, "Reset Password", "<h1> Reset your password</h1>" +
+                                                                       $"<p>To reset your password <a href='{url}'>Click here</a></p>");
+
+            return "Success Reset password URL has been sent to the email successfully";
+           
+        }
+
+
+
+        public async Task<string> ResetPasswordAsync(PasswordResetViewModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return "user not found";
+                
+
+            if(model.NewPassword != model.ConfirmPassword)
+                return "Password doesn't match its confirmation";
+
+            var decodedToken = WebEncoders.Base64UrlDecode(model.Token);
+            var normalToken = Encoding.UTF8.GetString(decodedToken);
+
+            var result = await _userManager.ResetPasswordAsync(user, normalToken, model.NewPassword);
+
+            return result.Succeeded ? "Success Password has been reset" : "Error Something went wrong";
+        }
+
     }
 }

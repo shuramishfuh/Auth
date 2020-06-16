@@ -5,8 +5,6 @@ using JWTAuthentication.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.VisualBasic;
 
 namespace JWTAuthentication.WebApi.Controllers
 {
@@ -15,12 +13,10 @@ namespace JWTAuthentication.WebApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IConfiguration _configuration;
 
-        public UserController(IUserService userService,IConfiguration configuration)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _configuration = configuration;
         }
 
         /// <summary>
@@ -150,12 +146,12 @@ namespace JWTAuthentication.WebApi.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("RevokeToken")]
-        // method indicates a warning because of
-        // lack of await in the body 
-        // if turned async removed cannot convert 
-        // action result to task 
-        // so suppresses the warning 
-        // no effect to code however
+        /* method indicates a warning because of
+         lack of await in the body 
+         if turned async removed cannot convert 
+         action result to task 
+         so suppresses the warning 
+         no effect to code however  */
 #pragma warning disable 1998 
         public async Task<ActionResult> RevokeToken([FromBody] RevokeTokenRequest model)
 #pragma warning restore 1998
@@ -191,22 +187,48 @@ namespace JWTAuthentication.WebApi.Controllers
         }
 
 
-        // /api/auth/confirm-email?userid&token
+        // /api/user/confirm-email?userid&token
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
                 return NotFound();
-
             var result = await _userService.ConfirmEmailAsync(userId, token);
             if (result.StartsWith("Success"))
             {
-                return Redirect($"{_configuration["AppUrl"]}/ConfirmEmail.html");
+                return Ok(result);
             }
-
             return BadRequest(result);
-
-           
         }
+
+        // api/user/forget password
+        [HttpPost("ForgetPassword")]
+        public async Task<IActionResult> ForgetPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return NotFound();
+
+            var result = await _userService.ForgetPasswordAsync(email);
+
+            if (result.StartsWith("Success"))
+                return Ok(result); 
+
+            return BadRequest(result); 
+        }
+
+        // api/user/reset-password
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromForm]PasswordResetViewModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest("Check your Inputs");
+            var result = await _userService.ResetPasswordAsync(model);
+
+            if (result.StartsWith("Success"))
+                return Ok(result);
+
+            return BadRequest("error occured Please try again later");
+
+        }
+
     }
 }

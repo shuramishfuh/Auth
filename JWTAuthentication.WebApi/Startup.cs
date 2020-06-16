@@ -103,6 +103,7 @@ namespace JWTAuthentication.WebApi
                     };
                 });
             services.AddControllers();
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -126,9 +127,9 @@ namespace JWTAuthentication.WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Security API V1");
             });
 
-            app.UseStaticFiles();
+            
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             app.UseRouting();
 
             app.UseAuthentication();
@@ -136,6 +137,7 @@ namespace JWTAuthentication.WebApi
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapRazorPages();
                 endpoints.MapControllers();
             });
         }

@@ -7,13 +7,14 @@ namespace JWTAuthentication.WebApi.Services
     {
         Task<string> RegisterAsync(RegisterModel model);
         Task<string> DeleteUserAsync(RegisterModel model);
-        Task<string>UpdateUserEmailAsync(string currentEmail, string newEmail);
         Task<AuthenticationModel> GetTokenAsync(TokenRequestModel model);
         Task<string> AddRoleAsync(AddRoleModel model);
         Task<string> RemoveRoleAsync(AddRoleModel model);
         Task<string> UpdateUserAsync(RegisterModel model);
         Task<string> ConfirmEmailAsync(string userId, string token);
         Task<string> SendEmail(string emailTo, string subject, string body);
+        Task<string> ForgetPasswordAsync(string email);
+        Task<string> ResetPasswordAsync(PasswordResetViewModel model);
         Task<AuthenticationModel> RefreshTokenAsync(string jwtToken);
 
         bool RevokeToken(string token);
