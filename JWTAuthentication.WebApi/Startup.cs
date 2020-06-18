@@ -87,7 +87,7 @@ namespace JWTAuthentication.WebApi
 
                 .AddJwtBearer(o =>
                 {
-                    o.RequireHttpsMetadata = false;
+                    o.RequireHttpsMetadata = true;
                     o.SaveToken = false;
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
@@ -127,7 +127,6 @@ namespace JWTAuthentication.WebApi
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Security API V1");
             });
 
-            
             app.UseHttpsRedirection();
             app.UseRouting();
 
