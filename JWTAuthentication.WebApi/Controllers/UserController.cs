@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using JWTAuthentication.WebApi.Filter;
 using JWTAuthentication.WebApi.Models;
 using JWTAuthentication.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JWTAuthentication.WebApi.Controllers
 {
+    [ApikeyAuth]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
