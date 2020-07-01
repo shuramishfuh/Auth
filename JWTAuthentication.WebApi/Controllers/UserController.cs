@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JWTAuthentication.WebApi.Controllers
 {
-    [ApikeyAuth]
+
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -26,8 +26,9 @@ namespace JWTAuthentication.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [ApikeyAuth]
         [HttpPost("Register")]
-        public async Task<ActionResult> RegisterAsync([FromBody]RegisterModel model)
+        public async Task<ActionResult> RegisterAsync([FromBody] RegisterModel model)
         {
 
             var result = await _userService.RegisterAsync(model);
@@ -37,9 +38,9 @@ namespace JWTAuthentication.WebApi.Controllers
             }
 
             return BadRequest(result);
-        } 
-        
-        
+        }
+
+
         /// <summary>
         /// Updates existing user
         /// </summary>
@@ -47,7 +48,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpPost("Update")]
-        public async Task<ActionResult> UpdateUserAsync([FromBody]RegisterModel model)
+        public async Task<ActionResult> UpdateUserAsync([FromBody] RegisterModel model)
         {
 
             var result = await _userService.UpdateUserAsync(model);
@@ -63,7 +64,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// </summary>
         /// <param name="model">requires user's email address</param>
         /// <returns></returns>
-        [Authorize(Roles ="Root")]
+        [Authorize(Roles = "Root")]
         [HttpPost("delete")]
         public async Task<ActionResult> DeleteUserAsync([FromBody] RegisterModel model)
         {
@@ -80,8 +81,9 @@ namespace JWTAuthentication.WebApi.Controllers
         /// </summary>
         /// <param name="model"> email password</param>
         /// <returns></returns>
+        [ApikeyAuth]
         [HttpPost("Token")]
-        public async Task<ActionResult> GetTokenAsync([FromBody]TokenRequestModel model)
+        public async Task<ActionResult> GetTokenAsync([FromBody] TokenRequestModel model)
         {
             var result = await _userService.GetTokenAsync(model);
             if (result.RefreshToken is null)
@@ -109,8 +111,8 @@ namespace JWTAuthentication.WebApi.Controllers
             }
 
             return BadRequest(result);
-        }   
-        
+        }
+
         /// <summary>
         /// removes roles to user with current roles
         /// </summary>
@@ -133,6 +135,7 @@ namespace JWTAuthentication.WebApi.Controllers
         /// refresh existing token 
         /// </summary>
         /// <returns></returns>
+        [ApikeyAuth]
         [HttpPost("RefreshToken")]
         public async Task<ActionResult> RefreshToken()
         {
@@ -142,12 +145,13 @@ namespace JWTAuthentication.WebApi.Controllers
                 SetRefreshTokenInCookie(response.RefreshToken);
             return Ok(response);
         }
-        
+
         /// <summary>
         ///  revoke token and render it inactive
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        [ApikeyAuth]
         [HttpPost("RevokeToken")]
         /* method indicates a warning because of
          lack of await in the body 
@@ -181,8 +185,8 @@ namespace JWTAuthentication.WebApi.Controllers
             };
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
-
-        [Authorize, HttpPost("Tokens/{id}")]
+        [ApikeyAuth]
+        [HttpPost("Tokens/{id}")]
         public ActionResult GetRefreshTokens(string id)
         {
             var user = _userService.GetById(id);
@@ -205,6 +209,8 @@ namespace JWTAuthentication.WebApi.Controllers
         }
 
         // api/user/forget password
+        // send email
+        [ApikeyAuth]
         [HttpPost("ForgetPassword")]
         public async Task<IActionResult> ForgetPassword(string email)
         {
@@ -214,26 +220,20 @@ namespace JWTAuthentication.WebApi.Controllers
             var result = await _userService.ForgetPasswordAsync(email);
 
             if (result.StartsWith("Success"))
-                return Ok(result); 
+                return Ok(result);
 
-            return BadRequest(result); 
+            return BadRequest(result);
         }
 
         // api/user/reset-password
         [HttpPost("ResetPassword")]
-        public async Task<ActionResult> ResetPassword([FromForm]PasswordResetViewModel model)
+        public async Task<ActionResult> ResetPassword([FromForm] PasswordResetViewModel model)
         {
             if (!ModelState.IsValid) return BadRequest("Check your Inputs");
             var result = await _userService.ResetPasswordAsync(model);
-
             if (result.StartsWith("Success"))
                 return Ok(result);
-
             return BadRequest("error occured Please try again later");
-
-        }  
-        
-      
-
+        }
     }
 }

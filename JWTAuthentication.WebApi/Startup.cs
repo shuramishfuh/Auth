@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
+using JWTAuthentication.WebApi.Services.Auth;
 using Microsoft.OpenApi.Models;
 
 namespace JWTAuthentication.WebApi

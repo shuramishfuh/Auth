@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 using JWTAuthentication.WebApi.Models;
-using System.Threading.Tasks;
 
 namespace JWTAuthentication.WebApi.Services
 {

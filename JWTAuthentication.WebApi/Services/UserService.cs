@@ -1,12 +1,4 @@
-﻿using JWTAuthentication.WebApi.Constants;
-using JWTAuthentication.WebApi.Contexts;
-using JWTAuthentication.WebApi.Entities;
-using JWTAuthentication.WebApi.Models;
-using JWTAuthentication.WebApi.Settings;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System;
+﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Mail;
@@ -14,10 +6,18 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using JWTAuthentication.WebApi.Constants;
+using JWTAuthentication.WebApi.Contexts;
+using JWTAuthentication.WebApi.Entities;
+using JWTAuthentication.WebApi.Models;
+using JWTAuthentication.WebApi.Settings;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
-namespace JWTAuthentication.WebApi.Services
+namespace JWTAuthentication.WebApi.Services.Auth
 {
     public class UserService : IUserService
     {
@@ -26,7 +26,7 @@ namespace JWTAuthentication.WebApi.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly JWT _jwt;
 
-        public UserService(UserManager<ApplicationUser> userManager, IOptions<JWT> jwt, ApplicationDbContext context,IConfiguration configuration)
+        public UserService(UserManager<ApplicationUser> userManager, IOptions<JWT> jwt, ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -54,7 +54,7 @@ namespace JWTAuthentication.WebApi.Services
             var encodeEmailToken = Encoding.UTF8.GetBytes(confirmEmailToken);
             var validEmailToken = WebEncoders.Base64UrlEncode(encodeEmailToken);
             var url = $"{_configuration["AppUrl"]}/api/user/confirmEmail?userid={getUser.Id}&token={validEmailToken}"; // change AppUrl in config after deployment
-            await SendEmail(getUser.Email, "Confirm your email", $"<h1>Welcome</h1>" + 
+            await SendEmail(getUser.Email, "Confirm your email", $"<h1>Welcome</h1>" +
                                                                  $"<p>Please confirm your email by <a href='{url}'>Clicking here</a></p>");
 
 
@@ -73,14 +73,14 @@ namespace JWTAuthentication.WebApi.Services
             {
                 return $"No user with {model.Email }  found.";
             }
-            
-            if(model.Username != null)
+
+            if (model.Username != null)
                 user.UserName = model.Username;
             if (model.FirstName != null)
-                 user.FirstName = model.FirstName; 
+                user.FirstName = model.FirstName;
             if (model.LastName != null)
-                 user.LastName = model.LastName;
-           
+                user.LastName = model.LastName;
+
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded) return $"Error occured could not update user {user}";
@@ -88,24 +88,16 @@ namespace JWTAuthentication.WebApi.Services
             return $"Success User updated";
 
         }
-      
+
         public async Task<string> DeleteUserAsync(RegisterModel model)
         {
             var userWithSameEmail = await _userManager.FindByEmailAsync(model.Email);
-            if (userWithSameEmail != null)
-            {
-                var result = await _userManager.DeleteAsync(userWithSameEmail);
-                if (result.Succeeded)
-                {
-                   // await _userManager.AddToRoleAsync(user, Authorization.DefaultRole.ToString());
-                    await _context.SaveChangesAsync();
-                    return $"Success user was deleted";
-
-                }
-                return $"Error occured could not delete user with email{model.Email} ";
-
-            }
-            return $" No User with Email {model.Email } was found.";
+            if (userWithSameEmail == null) return $" No User with Email {model.Email} was found.";
+            var result = await _userManager.DeleteAsync(userWithSameEmail);
+            if (!result.Succeeded) return $"Error occured could not delete user with email{model.Email} ";
+            // await _userManager.AddToRoleAsync(user, Authorization.DefaultRole.ToString());
+            await _context.SaveChangesAsync();
+            return $"Success user was deleted";
         }
 
         public async Task<AuthenticationModel> GetTokenAsync(TokenRequestModel model)
@@ -343,14 +335,14 @@ namespace JWTAuthentication.WebApi.Services
         /// <param name="subject"></param>
         /// <param name="body"></param>
         /// <returns></returns>
-        public async Task<string> SendEmail(string emailTo,  string subject, string body)
+        public async Task<string> SendEmail(string emailTo, string subject, string body)
         {
             var from = _configuration.GetValue<string>("Email:address");
             var password = _configuration.GetValue<string>("Email:password");
             var message = new MailMessage(from, emailTo, subject, body)
             {
                 IsBodyHtml = true,
-                BodyEncoding =Encoding.UTF8,
+                BodyEncoding = Encoding.UTF8,
                 SubjectEncoding = Encoding.UTF8
             };
             var smtpClient = new SmtpClient
@@ -366,9 +358,9 @@ namespace JWTAuthentication.WebApi.Services
 
             await smtpClient.SendMailAsync(message);
 
-            return "Successful"; 
+            return "Successful";
         }
-      
+
         /// <summary>
         /// verify email
         /// </summary>
@@ -377,20 +369,16 @@ namespace JWTAuthentication.WebApi.Services
         /// <returns></returns>
         public async Task<string> ConfirmEmailAsync(string userId, string token)
         {
-            var user = await _userManager.FindByIdAsync(userId); 
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
-            {  return $"Error User not found";}
+            { return $"Error User not found"; }
 
             var decodedToken = WebEncoders.Base64UrlDecode(token);
             var normalToken = Encoding.UTF8.GetString(decodedToken);
 
             var result = await _userManager.ConfirmEmailAsync(user, normalToken);
 
-            if (result.Succeeded)
-            {return $"Success Email confirmed";}
-
-            return $"Error Could not confirm email";
-          
+            return result.Succeeded ? $"Success Email confirmed" : $"Error Could not confirm email";
         }
 
 
@@ -398,8 +386,8 @@ namespace JWTAuthentication.WebApi.Services
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
-                return  $"Error User not found";
-            
+                return $"Error User not found";
+
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var encodedToken = Encoding.UTF8.GetBytes(token);
             var validToken = WebEncoders.Base64UrlEncode(encodedToken);
@@ -410,7 +398,7 @@ namespace JWTAuthentication.WebApi.Services
                                                                        $"<p>To reset your password <a href='{url}'>Click here</a></p>");
 
             return "Success Reset password URL has been sent to the email successfully";
-           
+
         }
 
 
@@ -420,9 +408,9 @@ namespace JWTAuthentication.WebApi.Services
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
                 return "user not found";
-                
 
-            if(model.NewPassword != model.ConfirmPassword)
+
+            if (model.NewPassword != model.ConfirmPassword)
                 return "Password doesn't match its confirmation";
 
             var decodedToken = WebEncoders.Base64UrlDecode(model.Token);

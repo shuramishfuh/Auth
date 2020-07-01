@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace JWTAuthentication.WebApi.Filter
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method)]
     public class ApikeyAuth : Attribute, IAsyncActionFilter
     {
         private const string KeyHeaderName = "AuthApiKey";
