@@ -1,10 +1,10 @@
-﻿using JWTAuthentication.WebApi.Constants;
-using JWTAuthentication.WebApi.Models;
-using Microsoft.AspNetCore.Identity;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Auth.Constants;
+using Auth.Models;
+using Microsoft.AspNetCore.Identity;
 
-namespace JWTAuthentication.WebApi.Contexts
+namespace Auth.Contexts
 {
     public class ApplicationDbContextSeed
     {

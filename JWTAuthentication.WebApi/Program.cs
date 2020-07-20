@@ -1,14 +1,14 @@
-using JWTAuthentication.WebApi.Contexts;
-using JWTAuthentication.WebApi.Models;
+using System;
+using System.Threading.Tasks;
+using Auth.Contexts;
+using Auth.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
-namespace JWTAuthentication.WebApi
+namespace Auth
 {
     public class Program
     {

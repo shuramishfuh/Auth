@@ -1,4 +1,4 @@
-﻿namespace JWTAuthentication.WebApi.Constants
+﻿namespace Auth.Constants
 {
     public class Authorization
     {

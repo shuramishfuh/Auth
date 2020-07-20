@@ -1,8 +1,8 @@
-﻿using JWTAuthentication.WebApi.Models;
+﻿using Auth.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace JWTAuthentication.WebApi.Contexts
+namespace Auth.Contexts
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {

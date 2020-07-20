@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace JWTAuthentication.WebApi.Pages
+namespace Auth.Pages
 {
     public class ResetPasswordModel : PageModel
     {

@@ -1,4 +1,4 @@
-﻿namespace JWTAuthentication.WebApi.Settings
+﻿namespace Auth.Settings
 {
     public class JWT
     {

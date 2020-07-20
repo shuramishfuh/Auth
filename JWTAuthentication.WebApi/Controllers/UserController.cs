@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
-using JWTAuthentication.WebApi.Filter;
-using JWTAuthentication.WebApi.Models;
-using JWTAuthentication.WebApi.Services;
+using Auth.Filter;
+using Auth.Models;
+using Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JWTAuthentication.WebApi.Controllers
+namespace Auth.Controllers
 {
 
     [Route("api/[controller]")]

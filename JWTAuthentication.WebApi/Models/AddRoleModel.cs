@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using JWTAuthentication.WebApi.Constants;
+using Auth.Constants;
 
-namespace JWTAuthentication.WebApi.Models
+namespace Auth.Models
 {
     public class AddRoleModel
     {

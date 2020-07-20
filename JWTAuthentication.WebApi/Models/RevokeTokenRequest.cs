@@ -1,4 +1,4 @@
-﻿namespace JWTAuthentication.WebApi.Models
+﻿namespace Auth.Models
 {
     public class RevokeTokenRequest
     {

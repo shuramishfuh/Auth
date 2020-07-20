@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 
-namespace JWTAuthentication.WebApi.Entities
+namespace Auth.Entities
 {
     [Owned]
     public class RefreshToken

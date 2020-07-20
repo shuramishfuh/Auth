@@ -6,18 +6,18 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using JWTAuthentication.WebApi.Constants;
-using JWTAuthentication.WebApi.Contexts;
-using JWTAuthentication.WebApi.Entities;
-using JWTAuthentication.WebApi.Models;
-using JWTAuthentication.WebApi.Settings;
+using Auth.Constants;
+using Auth.Contexts;
+using Auth.Entities;
+using Auth.Models;
+using Auth.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace JWTAuthentication.WebApi.Services.Auth
+namespace Auth.Services
 {
     public class UserService : IUserService
     {

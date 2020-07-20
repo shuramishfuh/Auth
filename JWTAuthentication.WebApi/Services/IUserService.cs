@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using JWTAuthentication.WebApi.Models;
+using Auth.Models;
 
-namespace JWTAuthentication.WebApi.Services
+namespace Auth.Services
 {
     public interface IUserService
     {

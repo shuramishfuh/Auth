@@ -1,7 +1,9 @@
-using JWTAuthentication.WebApi.Contexts;
-using JWTAuthentication.WebApi.Models;
-using JWTAuthentication.WebApi.Services;
-using JWTAuthentication.WebApi.Settings;
+using System;
+using System.Text;
+using Auth.Contexts;
+using Auth.Models;
+using Auth.Services;
+using Auth.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,12 +13,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Text;
-using JWTAuthentication.WebApi.Services.Auth;
 using Microsoft.OpenApi.Models;
 
-namespace JWTAuthentication.WebApi
+namespace Auth
 {
     public class Startup
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace JWTAuthentication.WebApi.Migrations
+namespace Auth.Migrations
 {
     public partial class fixexpiraitonfinal : Migration
     {
