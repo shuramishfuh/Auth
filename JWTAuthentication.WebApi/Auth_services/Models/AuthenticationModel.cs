@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Auth.Models
+namespace Auth.Auth_services.Models
 {
     public class AuthenticationModel
     {

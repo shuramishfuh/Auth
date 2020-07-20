@@ -1,4 +1,4 @@
-﻿namespace Auth.Settings
+﻿namespace Auth.Auth_services.Settings
 {
     public class JWT
     {

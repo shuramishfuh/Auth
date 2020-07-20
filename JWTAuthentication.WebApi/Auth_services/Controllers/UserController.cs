@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Auth.Filter;
-using Auth.Models;
-using Auth.Services;
+using Auth.Auth_services.Filter;
+using Auth.Auth_services.Models;
+using Auth.Auth_services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Auth.Controllers
+namespace Auth.Auth_services.Controllers
 {
 
     [Route("api/[controller]")]

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using Auth.Entities;
+using Auth.Auth_services.Entities;
 using Microsoft.AspNetCore.Identity;
 
-namespace Auth.Models
+namespace Auth.Auth_services.Models
 {
     public class ApplicationUser : IdentityUser
     {

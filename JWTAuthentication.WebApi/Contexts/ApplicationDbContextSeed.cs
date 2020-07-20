@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Auth.Constants;
-using Auth.Models;
+using Auth.Auth_services.Constants;
+using Auth.Auth_services.Models;
 using Microsoft.AspNetCore.Identity;
 
 namespace Auth.Contexts

@@ -1,4 +1,4 @@
-﻿namespace Auth.Constants
+﻿namespace Auth.Auth_services.Constants
 {
     public class Authorization
     {

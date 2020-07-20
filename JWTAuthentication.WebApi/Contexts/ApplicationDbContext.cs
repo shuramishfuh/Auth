@@ -1,4 +1,4 @@
-﻿using Auth.Models;
+﻿using Auth.Auth_services.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

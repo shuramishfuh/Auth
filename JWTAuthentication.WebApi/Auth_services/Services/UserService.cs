@@ -6,18 +6,18 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Auth.Constants;
+using Auth.Auth_services.Constants;
+using Auth.Auth_services.Entities;
+using Auth.Auth_services.Models;
+using Auth.Auth_services.Settings;
 using Auth.Contexts;
-using Auth.Entities;
-using Auth.Models;
-using Auth.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Auth.Services
+namespace Auth.Auth_services.Services
 {
     public class UserService : IUserService
     {

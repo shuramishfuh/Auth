@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Auth.Constants;
+using Auth.Auth_services.Constants;
 
-namespace Auth.Models
+namespace Auth.Auth_services.Models
 {
     public class AddRoleModel
     {

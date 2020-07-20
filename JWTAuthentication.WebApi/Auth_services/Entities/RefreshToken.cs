@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 
-namespace Auth.Entities
+namespace Auth.Auth_services.Entities
 {
     [Owned]
     public class RefreshToken

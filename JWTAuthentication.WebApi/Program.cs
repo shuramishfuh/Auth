@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Auth.Auth_services.Models;
 using Auth.Contexts;
-using Auth.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;

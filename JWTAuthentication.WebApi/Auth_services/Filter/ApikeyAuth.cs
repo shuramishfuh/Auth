@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Auth.Filter
+namespace Auth.Auth_services.Filter
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class ApikeyAuth : Attribute, IAsyncActionFilter

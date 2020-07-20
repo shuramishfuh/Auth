@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Auth.Models;
+using Auth.Auth_services.Models;
 
-namespace Auth.Services
+namespace Auth.Auth_services.Services
 {
     public interface IUserService
     {
